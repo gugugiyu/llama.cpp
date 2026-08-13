@@ -54,6 +54,7 @@ import { modelsStore } from '$lib/stores/models.svelte';
 import { permissionsStore } from '$lib/stores/permissions.svelte';
 import { serverStore } from '$lib/stores/server.svelte';
 import { settingsStore } from '$lib/stores/settings.svelte';
+import { skillActivationStore } from '$lib/stores/skill-activation.svelte';
 import { skillsStore } from '$lib/stores/skills.svelte';
 import { toolsStore } from '$lib/stores/tools.svelte';
 import type {
@@ -363,6 +364,10 @@ class AgenticStore {
 
 		if (budget <= 0) return null;
 
+		// Reconstruct the conversation's durable base activations so in-run
+		// authorization and dedupe see what survived reload.
+		await skillActivationStore.loadConversation(conversationId);
+
 		let snapshot: SkillRunSnapshot;
 
 		try {
@@ -409,6 +414,8 @@ class AgenticStore {
 				snapshot,
 				packed,
 				definitions: built.definitions,
+				conversationId,
+				activation: skillActivationStore,
 				requestPermission: (toolName, serverLabel, skill, sig) =>
 					this.requestPermission(conversationId, toolName, serverLabel, skill, sig)
 			});
@@ -686,6 +693,7 @@ class AgenticStore {
 			onReasoningChunk,
 			onTimings,
 			onToolCallsStreaming,
+			onToolResultMessageCreated,
 			onTurnComplete,
 			updateToolResultMessage
 		} = callbacks;
@@ -1015,6 +1023,9 @@ class AgenticStore {
 				let result = '';
 				let toolSuccess = true;
 				let createdToolResultMessageId: string | null = null;
+				// Typed SKILL metadata returned by the Skills adapters for
+				// tool result messages the flow persists itself.
+				let skillExtras: DatabaseMessageExtra[] = [];
 
 				// Streaming tools (currently only exec_shell_command): mark
 				// the session so the matching renderer can switch to live mode.
@@ -1032,6 +1043,21 @@ class AgenticStore {
 							result = executionResult.content;
 
 							if (executionResult.isError) toolSuccess = false;
+
+							skillExtras = executionResult.extras ?? [];
+
+							// The shared durable operation already persisted the
+							// paired tool result message for a NEW base activation:
+							// reuse it instead of creating a second message, and
+							// update the callback's parent pointer so the next
+							// turn anchors to the new leaf.
+							if (
+								executionResult.activationRecorded &&
+								executionResult.recordedToolResultMessageId
+							) {
+								createdToolResultMessageId = executionResult.recordedToolResultMessageId;
+								await onToolResultMessageCreated?.(executionResult.recordedToolResultMessageId);
+							}
 						} else if (
 							toolSource === ToolSource.BUILTIN &&
 							toolName === BuiltInTool.EXEC_SHELL_COMMAND &&
@@ -1159,10 +1185,12 @@ class AgenticStore {
 						await updateToolResultMessage(createdToolResultMessageId, cleanedResult, attachments);
 					}
 				} else if (createToolResultMessage) {
+					const resultExtras = [...attachments, ...skillExtras];
+
 					toolResultMessage = await createToolResultMessage(
 						toolCall.id,
 						cleanedResult,
-						attachments.length > 0 ? attachments : undefined
+						resultExtras.length > 0 ? resultExtras : undefined
 					);
 				}
 

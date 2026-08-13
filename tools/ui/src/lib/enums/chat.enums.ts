@@ -82,7 +82,8 @@ export enum PdfViewMode {
 export enum ChatFormCommandAction {
 	PROMPT = 'prompt',
 	CWD = 'cwd',
-	MODEL = 'model'
+	MODEL = 'model',
+	SKILLS = 'skills'
 }
 
 export enum FileMentionEntryType {

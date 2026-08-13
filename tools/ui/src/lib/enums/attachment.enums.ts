@@ -9,6 +9,8 @@ export enum AttachmentType {
 	MCP_RESOURCE = 'MCP_RESOURCE',
 	PDF = 'PDF',
 	TEXT = 'TEXT',
+	/** Durable Skills tool-result metadata (activation records and resource results). */
+	SKILL = 'SKILL',
 	LEGACY_CONTEXT = 'context' // Legacy attachment type for backward compatibility
 }
 
