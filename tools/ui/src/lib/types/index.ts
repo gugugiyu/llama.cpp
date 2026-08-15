@@ -210,7 +210,7 @@ export type {
 export type { DesktopIconStripItem } from './navigation';
 
 // Tools types
-export type { ToolEntry, ToolGroup, BuiltinToolUiEntry } from './tools';
+export type { ToolEntry, ToolGroup, BuiltinToolUiEntry, SkillToolSetting } from './tools';
 
 // Skills types
 export type {

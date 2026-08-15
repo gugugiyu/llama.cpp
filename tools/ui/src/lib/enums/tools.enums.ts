@@ -2,7 +2,14 @@ export enum ToolSource {
 	BUILTIN = 'builtin',
 	MCP = 'mcp',
 	CUSTOM = 'custom',
-	FRONTEND = 'frontend'
+	FRONTEND = 'frontend',
+	/**
+	 * Settings-only source for the model-facing Skills adapters
+	 * (`read_skill` / `list_skill`). Skills entries are rendered from the
+	 * centralized Skills settings registry and never enter ordinary tool
+	 * collections (`allTools`, `toolGroups`, `getEnabledToolsForLLM()`).
+	 */
+	SKILLS = 'skills'
 }
 
 export enum ToolPermissionDecision {
