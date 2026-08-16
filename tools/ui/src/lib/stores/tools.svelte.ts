@@ -507,6 +507,8 @@ class ToolsStore {
 		} else {
 			this._disabledTools.add(key);
 		}
+
+		this.persistDisabledTools();
 	}
 
 	/** Enable all tools belonging to a specific MCP server */
