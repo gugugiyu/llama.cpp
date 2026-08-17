@@ -3,12 +3,7 @@ export enum ToolSource {
 	MCP = 'mcp',
 	CUSTOM = 'custom',
 	FRONTEND = 'frontend',
-	/**
-	 * Settings-only source for the model-facing Skills adapters
-	 * (`read_skill` / `list_skill`). Skills entries are rendered from the
-	 * centralized Skills settings registry and never enter ordinary tool
-	 * collections (`allTools`, `toolGroups`, `getEnabledToolsForLLM()`).
-	 */
+	/** Settings-only source for the Skills adapters. */
 	SKILLS = 'skills'
 }
 
@@ -24,24 +19,14 @@ export enum ToolResponseField {
 	ERROR = 'error'
 }
 
-/**
- * Entry types accepted by the `file_glob_search` tool's `type` parameter.
- * Mirrors the server-side validation in server-tools.cpp.
- */
+/** Valid `file_glob_search` type values. */
 export enum GlobSearchType {
 	FILE = 'file',
 	DIR = 'dir',
 	ALL = 'all'
 }
 
-/**
- * Wire-format identifiers for built-in and frontend tools. The string
- * value matches what the model emits in tool call names, so comparing
- * against `BuiltInTool.READ_FILE` is equivalent to comparing against the
- * raw `'read_file'` literal - the enum just keeps the two in lock-step
- * and gives TypeScript a single source of truth for autocomplete / rename
- * support.
- */
+/** Built-in tool names emitted on the wire. */
 export enum BuiltInTool {
 	READ_FILE = 'read_file',
 	READ_MEDIA = 'read_media',
